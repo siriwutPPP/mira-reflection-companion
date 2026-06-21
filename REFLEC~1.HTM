@@ -533,4 +533,85 @@ async function callProxy() {
   });
   let data = {};
   try { data = await res.json(); } catch {}
-  if (!res.ok) throw new Error(data.error || ('Server error ' + res.sta
+  if (!res.ok) throw new Error(data.error || ('Server error ' + res.status));
+  if (!data.reply) throw new Error(data.error || 'Empty reply from server.');
+  return data.reply;
+}
+
+/* ---------- Settings ---------- */
+function openSettings() {
+  $('serverUrl').value = LS.get('mira_server', CONFIG.SERVER_URL || '');
+  $('passcode').value = LS.get('mira_pass', '');
+  $('provider').value = LS.get('mira_provider', CONFIG.PROVIDER || '');
+  $('overlay').classList.add('show');
+}
+function closeSettings() { $('overlay').classList.remove('show'); }
+function saveSettings() {
+  LS.set('mira_server', $('serverUrl').value.trim());
+  LS.set('mira_pass', $('passcode').value.trim());
+  LS.set('mira_provider', $('provider').value);
+  closeSettings();
+}
+
+/* ---------- Save as PDF (via browser print dialog) ---------- */
+function saveAsPdf() {
+  if (messages.length === 0) { showError(t('nothingToSave')); return; }
+  const d = new Date();
+  $('printdate').textContent = d.toLocaleString(lang === 'th' ? 'th-TH' : 'en-US',
+    { dateStyle: 'long', timeStyle: 'short' });
+  const prevTitle = document.title;
+  document.title = 'Mira-reflection-' + d.toISOString().slice(0, 10);
+  window.print();
+  setTimeout(() => { document.title = prevTitle; }, 800);
+}
+
+/* ---------- New session ---------- */
+function resetSession() {
+  messages = []; secondsLeft = 25*60; timeWarned = false;
+  clearInterval(timerInterval);
+  $('timer').classList.remove('warn');
+  $('timerText').textContent = '25:00';
+  stream.innerHTML = `<div class="welcome" id="welcome">
+      <div class="biglogo"></div>
+      <h1 id="wt"></h1><p id="wb"></p>
+      <div class="starters" id="starters"></div></div>`;
+  $('wt').textContent = t('welcomeTitle');
+  $('wb').textContent = t('welcomeBody');
+  renderStarters();
+}
+
+/* ============================================================
+   Wire up
+   ============================================================ */
+function refreshWelcome() {
+  applyLang();
+  const wt=$('wt')||document.querySelector('#welcome h1');
+  const wb=$('wb')||document.querySelector('#welcome p');
+  if (wt) wt.textContent = t('welcomeTitle');
+  if (wb) wb.textContent = t('welcomeBody');
+}
+$('langTh').onclick = () => { lang='th'; LS.set('mira_lang','th'); refreshWelcome(); };
+$('langEn').onclick = () => { lang='en'; LS.set('mira_lang','en'); refreshWelcome(); };
+$('settingsBtn').onclick = openSettings;
+$('cancelSettings').onclick = closeSettings;
+$('saveSettings').onclick = saveSettings;
+$('resetBtn').onclick = resetSession;
+$('savePdfBtn').onclick = saveAsPdf;
+$('sendBtn').onclick = sendMessage;
+$('overlay').onclick = (e) => { if (e.target === $('overlay')) closeSettings(); };
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+input.addEventListener('input', () => {
+  input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+});
+
+applyLang();
+document.querySelector('#welcome h1').textContent = t('welcomeTitle');
+document.querySelector('#welcome p').textContent = t('welcomeBody');
+// Only the instructor (teacher mode) is prompted to configure. Students
+// never see the settings dialog; if the app isn't set up, they get a notice.
+if (TEACHER && (!getServer() || !getPasscode())) setTimeout(openSettings, 400);
+</script>
+</body>
+</html>
