@@ -196,6 +196,7 @@
     <button id="langTh" class="th">ไทย</button>
     <button id="langEn" class="active">EN</button>
   </div>
+  <button class="iconbtn" id="downloadBtn" title="Save my reflection" data-i18n-title="download">⬇</button>
   <button class="iconbtn" id="resetBtn" title="New session" data-i18n-title="newSession">↺</button>
   <button class="iconbtn" id="settingsBtn" title="Settings" data-i18n-title="settings">⚙</button>
 </header>
@@ -303,7 +304,15 @@ const I18N = {
     ],
     needSetup: "Please add the server address and passcode in Settings first.",
     thinking: "Mira is thinking…",
-    timeUp: "(Our ~25 minutes are about up.)"
+    timeUp: "(Our ~25 minutes are about up.)",
+    download: "Save my reflection",
+    nothingToSave: "There's nothing to save yet — start a reflection first.",
+    exportTitle: "My reflection with Mira",
+    exportIntro: "A private record of this reflection session, saved by me.",
+    exportDate: "Saved:",
+    exportYou: "Me",
+    exportMira: "Mira",
+    exportFooter: "Mira asks questions to help you reflect. It is not a counselor or crisis service."
   },
   th: {
     tagline: "เพื่อนชวนสะท้อนคิด",
@@ -327,7 +336,15 @@ const I18N = {
     ],
     needSetup: "กรุณาใส่ที่อยู่เซิร์ฟเวอร์และรหัสผ่านในหน้าตั้งค่าก่อนนะ",
     thinking: "Mira กำลังคิด…",
-    timeUp: "(เวลาประมาณ 25 นาทีของเราใกล้หมดแล้วนะ)"
+    timeUp: "(เวลาประมาณ 25 นาทีของเราใกล้หมดแล้วนะ)",
+    download: "บันทึกการสะท้อนคิดของฉัน",
+    nothingToSave: "ยังไม่มีอะไรให้บันทึก เริ่มสะท้อนคิดก่อนนะ",
+    exportTitle: "บันทึกการสะท้อนคิดกับ Mira",
+    exportIntro: "บันทึกส่วนตัวของการสะท้อนคิดครั้งนี้ ฉันเลือกบันทึกไว้เอง",
+    exportDate: "บันทึกเมื่อ:",
+    exportYou: "ฉัน",
+    exportMira: "Mira",
+    exportFooter: "Mira ตั้งคำถามเพื่อชวนสะท้อนคิด ไม่ใช่นักให้คำปรึกษาหรือบริการช่วยเหลือฉุกเฉิน"
   }
 };
 
@@ -506,6 +523,26 @@ function resetSession() {
   renderStarters();
 }
 
+/* ---------- Download my reflection (student-owned export) ---------- */
+function downloadReflection() {
+  if (!messages.length) { showError(t('nothingToSave')); return; }
+  const sep = '────────────────────────────';
+  const lines = [ t('exportTitle'), t('exportIntro'), '', t('exportDate') + ' ' + new Date().toLocaleString(), sep, '' ];
+  for (const m of messages) {
+    lines.push((m.role === 'user' ? t('exportYou') : t('exportMira')) + ':');
+    lines.push(m.content);
+    lines.push('');
+  }
+  lines.push(sep);
+  lines.push(t('exportFooter'));
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mira-reflection-' + new Date().toISOString().slice(0, 10) + '.txt';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
 /* ============================================================
    Wire up
    ============================================================ */
@@ -522,6 +559,7 @@ $('settingsBtn').onclick = openSettings;
 $('cancelSettings').onclick = closeSettings;
 $('saveSettings').onclick = saveSettings;
 $('resetBtn').onclick = resetSession;
+$('downloadBtn').onclick = downloadReflection;
 $('sendBtn').onclick = sendMessage;
 $('overlay').onclick = (e) => { if (e.target === $('overlay')) closeSettings(); };
 input.addEventListener('keydown', (e) => {
