@@ -10,12 +10,12 @@
      CLASS_PASSCODE     (required)  e.g. "refTes6789"
      ANTHROPIC_API_KEY  (required for Claude)
      OPENAI_API_KEY     (optional, only if you also use OpenAI)
-     ANTHROPIC_MODEL    (optional)  default claude-3-5-haiku-latest
+     ANTHROPIC_MODEL    (optional)  default claude-haiku-4-5
      OPENAI_MODEL       (optional)  default gpt-4o-mini
      DEFAULT_PROVIDER   (optional)  "anthropic" or "openai"
    ============================================================ */
 
-const DEFAULT_MODELS = { openai: "gpt-4o-mini", anthropic: "claude-3-5-haiku-latest" };
+const DEFAULT_MODELS = { openai: "gpt-4o-mini", anthropic: "claude-haiku-4-5" };
 
 const SYSTEM_PROMPT = `# Mira — Reflection Companion (เพื่อนชวนสะท้อนคิด)
 
