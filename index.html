@@ -261,9 +261,9 @@
    are asked for the server address + passcode on first use.
    ============================================================ */
 const CONFIG = {
-  SERVER_URL: "",   // e.g. "https://mira-proxy.your-name.workers.dev"
-  PASSCODE:   "",   // e.g. "reflect2026"  (leave blank to make students type it)
-  PROVIDER:   ""    // "", "openai", or "anthropic"  ("" = server default)
+  SERVER_URL: "/api/chat",   // Vercel serverless function (same origin)
+  PASSCODE:   "refTes6789",  // class passcode (checked server-side too)
+  PROVIDER:   "anthropic"    // "", "openai", or "anthropic"  ("" = server default)
 };
 
 /* System prompt shown for teacher reference. The authoritative
