@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mira · เพื่อนชวนสะท้อนคิด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --panel: #ffffff;
+    --ink: #2b2a27;
+    --ink-soft: #6b6760;
+    --accent: #6a7d6e;
+    --accent-deep: #4f6155;
+    --accent-soft: #e6ece5;
+    --user-bubble: #e9e3d5;
+    --line: #e4ded2;
+    --danger: #b14b3c;
+    --radius: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: 'Inter', 'Noto Sans Thai', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .th { font-family: 'Noto Sans Thai', 'Inter', sans-serif; }
+
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .logo {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #8fa392, var(--accent-deep));
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.35);
+  }
+  .titles { display: flex; flex-direction: column; line-height: 1.15; }
+  .titles .name { font-weight: 700; font-size: 17px; }
+  .titles .sub { font-size: 12.5px; color: var(--ink-soft); }
+  .spacer { flex: 1; }
+  .timer {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600; font-size: 15px;
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+    padding: 6px 12px; border-radius: 999px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .timer .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .timer.warn { color: var(--danger); background: #f6e3df; }
+  .timer.warn .dot { background: var(--danger); }
+  .iconbtn {
+    border: 1px solid var(--line); background: var(--panel);
+    width: 36px; height: 36px; border-radius: 10px;
+    cursor: pointer; font-size: 16px; color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .iconbtn:hover { background: var(--accent-soft); }
+  .langtoggle {
+    border: 1px solid var(--line); background: var(--panel);
+    border-radius: 10px; overflow: hidden; display: flex; font-size: 13px;
+  }
+  .langtoggle button {
+    border: none; background: none; padding: 7px 11px; cursor: pointer;
+    color: var(--ink-soft); font-weight: 600;
+  }
+  .langtoggle button.active { background: var(--accent); color: #fff; }
+
+  main {
+    flex: 1; overflow-y: auto; padding: 26px 0;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .stream { width: 100%; max-width: 720px; padding: 0 20px; }
+  .msg { display: flex; margin-bottom: 18px; gap: 11px; }
+  .msg.user { justify-content: flex-end; }
+  .bubble {
+    padding: 13px 16px; border-radius: 14px; max-width: 80%;
+    line-height: 1.6; font-size: 15.5px; white-space: pre-wrap; word-wrap: break-word;
+  }
+  .msg.bot .bubble { background: var(--panel); box-shadow: var(--shadow); border-top-left-radius: 4px; }
+  .msg.user .bubble { background: var(--user-bubble); border-top-right-radius: 4px; }
+  .msg .av {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 35% 30%, #8fa392, var(--accent-deep));
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.35);
+  }
+  .typing .bubble { color: var(--ink-soft); font-style: italic; }
+
+  .welcome { text-align: center; max-width: 560px; margin: 4vh auto 0; padding: 0 24px; }
+  .welcome h1 { font-size: 25px; margin: 18px 0 6px; }
+  .welcome p { color: var(--ink-soft); line-height: 1.65; font-size: 15px; }
+  .biglogo {
+    width: 64px; height: 64px; border-radius: 50%; margin: 0 auto;
+    background: radial-gradient(circle at 35% 30%, #8fa392, var(--accent-deep));
+    box-shadow: inset 0 0 0 5px rgba(255,255,255,.4);
+  }
+  .starters { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+  .starter {
+    text-align: left; border: 1px solid var(--line); background: var(--panel);
+    padding: 13px 16px; border-radius: 12px; cursor: pointer; font-size: 14.5px;
+    color: var(--ink); transition: border-color .15s, background .15s; line-height:1.5;
+  }
+  .starter:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+  footer {
+    flex-shrink: 0; background: var(--panel); border-top: 1px solid var(--line);
+    padding: 14px 20px;
+  }
+  .composer { max-width: 720px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-end; }
+  textarea {
+    flex: 1; resize: none; border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 15px; font: inherit; font-size: 15.5px; line-height: 1.5;
+    max-height: 160px; outline: none; background: #fbfaf6;
+  }
+  textarea:focus { border-color: var(--accent); }
+  .sendbtn {
+    background: var(--accent); color: #fff; border: none; border-radius: 12px;
+    width: 46px; height: 46px; cursor: pointer; font-size: 19px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; transition: background .15s;
+  }
+  .sendbtn:hover { background: var(--accent-deep); }
+  .sendbtn:disabled { opacity: .4; cursor: default; }
+  .disclaim { max-width: 720px; margin: 9px auto 0; text-align: center; font-size: 11.5px; color: var(--ink-soft); }
+
+  /* Modal */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(43,42,39,.45);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    background: var(--panel); border-radius: 18px; max-width: 540px; width: 100%;
+    max-height: 88vh; overflow-y: auto; padding: 26px 28px; box-shadow: var(--shadow);
+  }
+  .modal h2 { margin: 0 0 4px; font-size: 19px; }
+  .modal .lead { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 18px; line-height: 1.55; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 6px; }
+  .field input, .field select {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+    font: inherit; font-size: 14px; outline: none; background: #fbfaf6;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field .hint { font-size: 12px; color: var(--ink-soft); margin-top: 5px; line-height: 1.5; }
+  .field .hint a { color: var(--accent-deep); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+  .btn {
+    border: none; border-radius: 10px; padding: 10px 18px; font: inherit; font-weight: 600;
+    font-size: 14px; cursor: pointer;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-deep); }
+  .btn-ghost { background: none; color: var(--ink-soft); border: 1px solid var(--line); }
+  details.prompt-view { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 14px; }
+  details.prompt-view summary { cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--accent-deep); }
+  details.prompt-view pre {
+    white-space: pre-wrap; font-size: 11.5px; line-height: 1.5; background: #f7f5ef;
+    padding: 14px; border-radius: 10px; margin-top: 12px; max-height: 220px; overflow-y: auto;
+    font-family: ui-monospace, Menlo, Consolas, monospace; color: #444;
+  }
+  .errbar {
+    background: #f6e3df; color: var(--danger); font-size: 13px; padding: 9px 14px;
+    border-radius: 10px; margin: 0 auto 12px; max-width: 720px; display: none;
+  }
+  @media (max-width: 560px) {
+    .titles .sub { display: none; }
+    .bubble { max-width: 88%; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"></div>
+  <div class="titles">
+    <span class="name">Mira</span>
+    <span class="sub th" data-i18n="tagline">เพื่อนชวนสะท้อนคิด · a space to think with yourself</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="timer" id="timer" title="Session time"><span class="dot"></span><span id="timerText">25:00</span></div>
+  <div class="langtoggle">
+    <button id="langTh" class="th">ไทย</button>
+    <button id="langEn" class="active">EN</button>
+  </div>
+  <button class="iconbtn" id="resetBtn" title="New session" data-i18n-title="newSession">↺</button>
+  <button class="iconbtn" id="settingsBtn" title="Settings" data-i18n-title="settings">⚙</button>
+</header>
+
+<main id="main">
+  <div class="stream" id="stream">
+    <div class="welcome" id="welcome">
+      <div class="biglogo"></div>
+      <h1 data-i18n="welcomeTitle">Hi, I'm Mira.</h1>
+      <p data-i18n="welcomeBody"></p>
+      <div class="starters" id="starters"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="errbar" id="errbar"></div>
+  <div class="composer">
+    <textarea id="input" rows="1" data-i18n-ph="placeholder" placeholder="Share what's on your mind…"></textarea>
+    <button class="sendbtn" id="sendBtn" title="Send">↑</button>
+  </div>
+  <div class="disclaim" data-i18n="disclaimer"></div>
+</footer>
+
+<!-- Settings modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 data-i18n="settingsTitle">Join the reflection</h2>
+    <p class="lead" data-i18n="settingsLead"></p>
+    <div class="field" id="serverField">
+      <label data-i18n="serverUrl">Server address</label>
+      <input type="text" id="serverUrl" placeholder="https://mira-proxy.your-name.workers.dev" autocomplete="off" />
+      <div class="hint" data-i18n="serverHint"></div>
+    </div>
+    <div class="field">
+      <label data-i18n="passcode">Class passcode</label>
+      <input type="password" id="passcode" placeholder="••••••••" autocomplete="off" />
+      <div class="hint" data-i18n="passcodeHint"></div>
+    </div>
+    <div class="field" id="providerField">
+      <label data-i18n="provider">AI model (optional)</label>
+      <select id="provider">
+        <option value="">Use server default</option>
+        <option value="openai">OpenAI (ChatGPT)</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelSettings" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" id="saveSettings" data-i18n="save">Save</button>
+    </div>
+    <details class="prompt-view">
+      <summary data-i18n="viewPrompt">View the system prompt (for teachers)</summary>
+      <pre id="promptText"></pre>
+    </details>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   TEACHER CONFIG — fill these in before sharing with students,
+   so they don't have to enter anything. If left blank, students
+   are asked for the server address + passcode on first use.
+   ============================================================ */
+const CONFIG = {
+  SERVER_URL: "",   // e.g. "https://mira-proxy.your-name.workers.dev"
+  PASSCODE:   "",   // e.g. "reflect2026"  (leave blank to make students type it)
+  PROVIDER:   ""    // "", "openai", or "anthropic"  ("" = server default)
+};
+
+/* System prompt shown for teacher reference. The authoritative
+   copy that actually runs lives in the Cloudflare Worker. */
+const SYSTEM_PROMPT = `Mira is a reflection companion for university students.
+It NEVER gives advice, answers, or recommendations — it only asks questions that
+help students think for themselves. Sessions are ~25 minutes. It replies in the
+student's language (Thai or English), keeps the student as author of their own
+insights, names its own moves to build the student's reflective skill, and stops
+to point toward human support if a student is in distress. The full, authoritative
+instructions live in your Cloudflare Worker (mira-proxy-worker.js) — edit the
+safety/resources section there before sharing widely.`;
+
+/* ============================================================
+   UI strings (bilingual)
+   ============================================================ */
+const I18N = {
+  en: {
+    tagline: "a space to think with yourself",
+    welcomeTitle: "Hi, I'm Mira.",
+    welcomeBody: "I'm a reflection companion — I won't give you advice or answers. Instead, for about 25 minutes, I'll ask questions to help you think more clearly about whatever's on your mind. What you conclude is yours. Shall we begin?",
+    placeholder: "Share what's on your mind…",
+    disclaimer: "Mira asks questions to help you reflect. It is not a counselor or crisis service. If you're in distress, please reach out to someone you trust or local support.",
+    settings: "Settings", newSession: "New session",
+    settingsTitle: "Join the reflection",
+    settingsLead: "Enter the details your instructor gave you. They're saved in this browser only.",
+    serverUrl: "Server address", passcode: "Class passcode", provider: "AI model (optional)",
+    serverHint: "The link your instructor shared (ends in .workers.dev).",
+    passcodeHint: "The passcode your instructor gave the class.",
+    cancel: "Cancel", save: "Save",
+    viewPrompt: "View the system prompt (for teachers)",
+    starters: [
+      "I have a decision to make and I'm stuck.",
+      "Something happened today I want to think through.",
+      "I'm not sure why I feel unmotivated lately.",
+      "I want to reflect on how my project is going."
+    ],
+    needSetup: "Please add the server address and passcode in Settings first.",
+    thinking: "Mira is thinking…",
+    timeUp: "(Our ~25 minutes are about up.)"
+  },
+  th: {
+    tagline: "เพื่อนชวนสะท้อนคิด",
+    welcomeTitle: "สวัสดี เราชื่อ Mira",
+    welcomeBody: "เราเป็นเพื่อนชวนสะท้อนคิด — เราจะไม่ให้คำแนะนำหรือคำตอบ แต่ในเวลาประมาณ 25 นาที เราจะตั้งคำถามเพื่อช่วยให้คุณคิดเรื่องที่อยู่ในใจได้ชัดขึ้น ข้อสรุปทั้งหมดเป็นของคุณเอง เริ่มกันเลยไหม?",
+    placeholder: "เล่าสิ่งที่อยู่ในใจคุณ…",
+    disclaimer: "Mira ตั้งคำถามเพื่อชวนคุณสะท้อนคิด ไม่ใช่นักให้คำปรึกษาหรือบริการช่วยเหลือฉุกเฉิน หากคุณรู้สึกทุกข์ใจ โปรดติดต่อคนที่ไว้ใจหรือแหล่งช่วยเหลือใกล้ตัว",
+    settings: "ตั้งค่า", newSession: "เริ่มใหม่",
+    settingsTitle: "เข้าร่วมการสะท้อนคิด",
+    settingsLead: "กรอกข้อมูลที่อาจารย์ให้มา ข้อมูลจะถูกเก็บไว้ในเบราว์เซอร์นี้เท่านั้น",
+    serverUrl: "ที่อยู่เซิร์ฟเวอร์", passcode: "รหัสผ่านของชั้นเรียน", provider: "โมเดล AI (ไม่บังคับ)",
+    serverHint: "ลิงก์ที่อาจารย์แชร์ให้ (ลงท้ายด้วย .workers.dev)",
+    passcodeHint: "รหัสผ่านที่อาจารย์ให้กับชั้นเรียน",
+    cancel: "ยกเลิก", save: "บันทึก",
+    viewPrompt: "ดูระบบพรอมต์ (สำหรับอาจารย์)",
+    starters: [
+      "มีเรื่องต้องตัดสินใจ แต่ตอนนี้คิดไม่ตก",
+      "วันนี้มีเรื่องเกิดขึ้น อยากลองทบทวนดู",
+      "ช่วงนี้รู้สึกไม่มีแรงจูงใจ ไม่แน่ใจว่าเพราะอะไร",
+      "อยากสะท้อนคิดว่าโปรเจกต์ของเราเป็นยังไงบ้าง"
+    ],
+    needSetup: "กรุณาใส่ที่อยู่เซิร์ฟเวอร์และรหัสผ่านในหน้าตั้งค่าก่อนนะ",
+    thinking: "Mira กำลังคิด…",
+    timeUp: "(เวลาประมาณ 25 นาทีของเราใกล้หมดแล้วนะ)"
+  }
+};
+
+/* ============================================================
+   State
+   ============================================================ */
+const LS = {
+  get: (k, d) => { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }
+};
+let lang = LS.get('mira_lang', (navigator.language||'').startsWith('th') ? 'th' : 'en');
+let messages = [];
+let timerInterval = null;
+let secondsLeft = 25 * 60;
+let timeWarned = false;
+
+function cfg(field, lsKey) {
+  // CONFIG (teacher-baked) wins; otherwise saved value
+  return (CONFIG[field] && CONFIG[field].trim && CONFIG[field].trim()) || LS.get(lsKey, '');
+}
+function getServer()   { return cfg('SERVER_URL','mira_server'); }
+function getPasscode() { return cfg('PASSCODE','mira_pass'); }
+function getProvider() { return (CONFIG.PROVIDER || LS.get('mira_provider','')); }
+
+/* ============================================================
+   DOM
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const stream = $('stream'), input = $('input'), errbar = $('errbar');
+function t(key) { return I18N[lang][key]; }
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = t(el.dataset.i18n); if (v) el.textContent = v;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const v = t(el.dataset.i18nPh); if (v) el.placeholder = v;
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const v = t(el.dataset.i18nTitle); if (v) el.title = v;
+  });
+  $('langTh').classList.toggle('active', lang === 'th');
+  $('langEn').classList.toggle('active', lang === 'en');
+  document.body.classList.toggle('th', lang === 'th');
+  renderStarters();
+  $('promptText').textContent = SYSTEM_PROMPT;
+  // hide server/passcode fields if teacher pre-baked them
+  $('serverField').style.display = (CONFIG.SERVER_URL && CONFIG.SERVER_URL.trim()) ? 'none' : 'block';
+}
+
+function renderStarters() {
+  const box = $('starters'); if (!box) return;
+  box.innerHTML = '';
+  t('starters').forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'starter' + (lang==='th' ? ' th' : '');
+    b.textContent = s;
+    b.onclick = () => { input.value = s; sendMessage(); };
+    box.appendChild(b);
+  });
+}
+
+/* ---------- Timer ---------- */
+function fmt(s) { const m = Math.floor(s/60), ss = s%60; return `${m}:${ss<10?'0':''}${ss}`; }
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (secondsLeft > 0) secondsLeft--;
+    $('timerText').textContent = fmt(secondsLeft);
+    if (secondsLeft <= 120) $('timer').classList.add('warn');
+    if (secondsLeft === 0) clearInterval(timerInterval);
+  }, 1000);
+}
+
+/* ---------- Rendering ---------- */
+function addBubble(role, text) {
+  const w = $('welcome'); if (w) w.remove();
+  const row = document.createElement('div');
+  row.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+  if (role !== 'user') { const av = document.createElement('div'); av.className = 'av'; row.appendChild(av); }
+  const b = document.createElement('div');
+  b.className = 'bubble' + (lang==='th' ? ' th' : '');
+  b.textContent = text;
+  row.appendChild(b);
+  stream.appendChild(row);
+  $('main').scrollTop = $('main').scrollHeight;
+  return b;
+}
+function showError(msg) {
+  errbar.textContent = msg; errbar.style.display = 'block';
+  setTimeout(() => { errbar.style.display = 'none'; }, 6000);
+}
+
+/* ---------- Sending ---------- */
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+  if (!getServer() || !getPasscode()) { showError(t('needSetup')); openSettings(); return; }
+
+  if (messages.length === 0) startTimer();
+
+  addBubble('user', text);
+  messages.push({ role: 'user', content: text });
+  input.value = ''; input.style.height = 'auto';
+  $('sendBtn').disabled = true;
+
+  const typingRow = document.createElement('div');
+  typingRow.className = 'msg bot typing';
+  const av = document.createElement('div'); av.className = 'av'; typingRow.appendChild(av);
+  const tb = document.createElement('div'); tb.className = 'bubble' + (lang==='th'?' th':''); tb.textContent = t('thinking');
+  typingRow.appendChild(tb); stream.appendChild(typingRow);
+  $('main').scrollTop = $('main').scrollHeight;
+
+  try {
+    const reply = await callProxy();
+    typingRow.remove();
+    addBubble('bot', reply);
+    messages.push({ role: 'assistant', content: reply });
+    if (secondsLeft <= 120) timeWarned = true;
+  } catch (e) {
+    typingRow.remove();
+    showError((e && e.message) ? e.message : 'Request failed.');
+  } finally {
+    $('sendBtn').disabled = false;
+    input.focus();
+  }
+}
+
+async function callProxy() {
+  let url = getServer().trim().replace(/\/+$/, '');
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      passcode: getPasscode(),
+      provider: getProvider(),
+      messages: messages,
+      timeWarn: (secondsLeft <= 120 && !timeWarned)
+    })
+  });
+  let data = {};
+  try { data = await res.json(); } catch {}
+  if (!res.ok) throw new Error(data.error || ('Server error ' + res.status));
+  if (!data.reply) throw new Error(data.error || 'Empty reply from server.');
+  return data.reply;
+}
+
+/* ---------- Settings ---------- */
+function openSettings() {
+  $('serverUrl').value = LS.get('mira_server', CONFIG.SERVER_URL || '');
+  $('passcode').value = LS.get('mira_pass', '');
+  $('provider').value = LS.get('mira_provider', CONFIG.PROVIDER || '');
+  $('overlay').classList.add('show');
+}
+function closeSettings() { $('overlay').classList.remove('show'); }
+function saveSettings() {
+  LS.set('mira_server', $('serverUrl').value.trim());
+  LS.set('mira_pass', $('passcode').value.trim());
+  LS.set('mira_provider', $('provider').value);
+  closeSettings();
+}
+
+/* ---------- New session ---------- */
+function resetSession() {
+  messages = []; secondsLeft = 25*60; timeWarned = false;
+  clearInterval(timerInterval);
+  $('timer').classList.remove('warn');
+  $('timerText').textContent = '25:00';
+  stream.innerHTML = `<div class="welcome" id="welcome">
+      <div class="biglogo"></div>
+      <h1 id="wt"></h1><p id="wb"></p>
+      <div class="starters" id="starters"></div></div>`;
+  $('wt').textContent = t('welcomeTitle');
+  $('wb').textContent = t('welcomeBody');
+  renderStarters();
+}
+
+/* ============================================================
+   Wire up
+   ============================================================ */
+function refreshWelcome() {
+  applyLang();
+  const wt=$('wt')||document.querySelector('#welcome h1');
+  const wb=$('wb')||document.querySelector('#welcome p');
+  if (wt) wt.textContent = t('welcomeTitle');
+  if (wb) wb.textContent = t('welcomeBody');
+}
+$('langTh').onclick = () => { lang='th'; LS.set('mira_lang','th'); refreshWelcome(); };
+$('langEn').onclick = () => { lang='en'; LS.set('mira_lang','en'); refreshWelcome(); };
+$('settingsBtn').onclick = openSettings;
+$('cancelSettings').onclick = closeSettings;
+$('saveSettings').onclick = saveSettings;
+$('resetBtn').onclick = resetSession;
+$('sendBtn').onclick = sendMessage;
+$('overlay').onclick = (e) => { if (e.target === $('overlay')) closeSettings(); };
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+input.addEventListener('input', () => {
+  input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+});
+
+applyLang();
+document.querySelector('#welcome h1').textContent = t('welcomeTitle');
+document.querySelector('#welcome p').textContent = t('welcomeBody');
+// If students still need to enter server/passcode, prompt on first load
+if (!getServer() || !getPasscode()) setTimeout(openSettings, 400);
+</script>
+</body>
+</html>
